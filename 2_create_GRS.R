@@ -7,7 +7,14 @@ headerFile <- args[3]
 specFile <- args[4]
 idsFile <- args[5]
 pvalCutoff <- args[6]
-outPutFile <- args[7]
+outputFile <- args[7]
+
+if(is.na(pvalCutoff)){
+    pvalCutoff <- 5e-8
+}
+if(is.na(outputFile)){
+    outputFile <- 'GRS.output'
+}
 
 #Getting genotypes and adding header myself, as read.table is fuzzy
 #geno <- read.table('all.SNPs.forR.noHeader',h=F,as.is=T)

@@ -18,9 +18,9 @@ A good standing with me, Vincent, if the case of trouble-shooting.
 
 Then just run the wrapper for the main script with the arguments as follows:
 
-`./runGRSscript.sh SNPlist.csv GRS.spec IDs.list`
+`./runGRSscript.sh SNPlist.csv GRS.spec IDs.list (pval-cutoff outputName)`
 
-At the end you can add the optinal arguments in the order:
+At the end you can add the optinal arguments (in brackets) in the order:
 
 `pval-cutoff` (default=5e-8 (GWAS significant)
 
