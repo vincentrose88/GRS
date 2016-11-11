@@ -12,9 +12,14 @@ A already formatted VCF-file to the script (see example) or path to the imputed 
 A good standing with me, Vincent, if the case of trouble-shooting.
 
 ##Running the program
+
+Start by running the setup:
+
+`./0_setup.sh path-to-impute-folder-with-vcfs`
+
 (Optinal) Start with creating the formatted vcf-file for R by:
 
-`1_create_geno_from_vcf.sh SNPlist.csv path-to-impute-folder-with-vcfs`
+`./1_create_geno_from_vcf.sh SNPlist.csv`
 
 Then just run the wrapper for the main script with the arguments as follows:
 
