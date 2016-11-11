@@ -6,3 +6,4 @@ ln -s $imputedFolder/* geno/imputed/
 
 chmod +x *.sh
 chmod +x *.R
+chmod +x *.py

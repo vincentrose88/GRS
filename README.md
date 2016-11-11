@@ -21,6 +21,8 @@ Start by running the setup:
 
 `./1_create_geno_from_vcf.sh SNPlist.csv`
 
+When finished (quits after submitting two scripts to the grid-engine (check with qstat -f)) two files are created in the folder: `genoFile.noHead` and `newHeader`
+
 Then just run the wrapper for the main script with the arguments as follows:
 
 `./runGRSscript.sh SNPlist.csv GRS.spec IDs.list (pval-cutoff outputName)`
