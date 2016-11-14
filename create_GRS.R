@@ -164,14 +164,14 @@ ld <- merge(tmp,ldSNPsINFO,by.x='SNP_B',by.y='ID',all.x=T)
 SNPLD <- NULL
 traitLD <- NULL
 if(sum(ld$Trait.x==ld$Trait.y)>0){
-    traitLD <- c(traitLD,ld$Trait.y)
+    traitLD <- c(traitLD,ld[ld$Trait.x==ld$Trait.y,'Trait.y'])
     cand <- ld[ld$Trait.x==ld$Trait.y,]
     SNPLD <- c(SNPLD,ifelse(cand$P.value.x<cand$P.value.y,cand$SNP_B,cand$SNP_A))   
 }
 if(!is.null(SNPLD)){
-    outLD <- data.frame(SNP=SNPLD,trait=traitLD)
-    for(out in outLD){
-        final <- final[-which(final$Trait==outLD$trait && final$ID==outLD$SNP),]
+    outLD <- data.frame(SNP=SNPLD,trait=traitLD,stringsAsFactors=F)
+    for(out in 1:nrow(outLD)){
+        final <- final[-which(final$Trait==outLD[out,'trait'] & final$ID==outLD[out,'SNP']),]
     }
 }
 ## Across traits (dont' remove, but note which SNPs are in LD across which traits)
