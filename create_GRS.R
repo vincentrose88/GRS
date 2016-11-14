@@ -6,8 +6,9 @@ genoFile <- args[2]
 headerFile <- args[3]
 specFile <- args[4]
 idsFile <- args[5]
-pvalCutoff <- args[6]
-outputFile <- args[7]
+outputFile <- args[6]
+pvalCutoff <- args[7]
+
 
 if(is.na(pvalCutoff)){
     pvalCutoff <- 5e-8
@@ -24,7 +25,7 @@ genoHeader <- read.table(headerFile,h=F,as.is=T)
 colnames(geno) <- t(genoHeader)
 #SNP list from literature
 #lit <- read.csv2('../lists/GRS_leadSNPs_full_list.csv',as.is=T)
-lit <- read.csv2(snpListFile,as.is=T)
+lit <- read.csv(snpListFile,as.is=T)
 #Justin Case code
 lit$N <- as.numeric(lit$N)
 lit$Effect <- as.numeric(lit$Effect)
@@ -37,7 +38,7 @@ t <- merge(geno,lit,by.x=c('CHROM','ID'),by.y=c('Chr','SNP'))
 #List of particids
 #ids <- read.csv2('../lists/birthdate.csv',as.is=T)
 #idsFormatted <- paste0(substr(paste0('57x',ids$subjid),1,5),'-',substr(paste0('57x',ids$subjid),6,nchar(paste0('57x',ids$subjid))))
-ids <- read.table('idsFile',h=F,as.is=T)
+ids <- read.table(idsFile,h=F,as.is=T)
 
 final <- t[,colnames(t) %in% c('ID','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','CHR','POS','Pos','GRS.type','Trait','Locus','Note','N','P.value',ids)]
 
@@ -79,8 +80,10 @@ alleleChecker <- function(x,ref='REF',alt='ALT',eff='Effect.Allele',nonEff='Othe
     }else if(x[ref]!=x[eff] & x[ref]!=x[nonEff] & x[ref]!=strandFlip(x[eff]) & x[ref]!=strandFlip(x[nonEff])){
         case <- NA
     }else{
-        print('what the hell?')
-        q()
+        print('No matching alleles found for the following SNP which is discarded:')
+        print(x)
+        print('------------Check your list of SNPs - site might be triallelic----------------------------')
+        case <- NA
     }
     return(case)    
 }
