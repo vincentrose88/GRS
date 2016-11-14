@@ -21,6 +21,8 @@ if(is.na(ldCutoff)){
     ldCutoff <- 0.8
 }
 
+print(args)
+print('loading in files')
 
 
 #Getting genotypes and adding header myself, as read.table is fuzzy
@@ -46,10 +48,10 @@ t <- merge(geno,lit,by.x=c('CHROM','ID'),by.y=c('Chr','SNP'))
 #idsFormatted <- paste0(substr(paste0('57x',ids$subjid),1,5),'-',substr(paste0('57x',ids$subjid),6,nchar(paste0('57x',ids$subjid))))
 idsdf <- read.table(idsFile,h=F,as.is=T)
 idNames <- idsdf$V1
-ids <- which(colnames(final) %in% idNames)
+
+ids <- which(colnames(t) %in% idNames)
 
 final <- t[,colnames(t) %in% c('ID','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','CHR','POS','Pos','GRS.type','Trait','Locus','Note','N','P.value',idNames)]
-
 
 #Strand flip function
 strandFlip <- function(x){
@@ -90,7 +92,7 @@ alleleChecker <- function(x,ref='REF',alt='ALT',eff='Effect.Allele',nonEff='Othe
         case <- NA
     }else{
         print('No matching alleles found for the following SNP which is discarded:')
-        print(x)
+        print(x[c('ID','POS',ref,alt,eff,nonEff)])
         print('------------Check your list of SNPs - site might be triallelic----------------------------')
         case <- NA
     }
@@ -101,6 +103,7 @@ final$case <- apply(final,1,alleleChecker)
 ids <- which(colnames(final) %in% idNames)
 
 finalBeforeFlip <- final
+print('flipping alleles...')
 
 #Flip those which have cases 1 or 3
 for(snp in which(final$case %in% c(1,3))){   
@@ -130,6 +133,7 @@ for(snp in which(final$Effect < 0)){
 
 #Now the POSITIVE effect allele is always 2 and equal to ALT and the NEGATIVE effect allele is always 0 and equal to REF
 
+print('removing duplicates...')
 # remove duplicated with the same trait association
 worst <- NULL
 for(trait in unique(final$Trait)){
@@ -152,7 +156,7 @@ if(!is.null(worst)){
     final <- final[-worst,]
 }   
 
-
+print('ld pruning step...')
 # LD prune
 ld <- read.table(ldFile,h=T,as.is=T)
 ld <- ld[ld$R2 > ldCutoff,] #Only look at SNPs with a R2 above 0.8 (default ldCutoff value)
@@ -202,6 +206,8 @@ final <- finalWithLDINFO[,c(which(!colnames(finalWithLDINFO) %in% ids),which(col
 final <- final[,-which(colnames(final)=='Pos')]
 ids <- which(colnames(final) %in% idNames)
 
+print(paste('calculating GRS as specified by',specFile))
+
 GRS <- NULL
 for(trait in unique(final$Trait)){
     tmp <- as.data.frame(apply(final[final$Trait==trait,ids],2,sum))
@@ -236,6 +242,8 @@ for(i in 1:nrow(GRStypes)){
     finalGRS <- cbind(finalGRS,newGRS)
     colnames(finalGRS)[ncol(finalGRS)] <- GRStypes[i,]
 }
+
+print(paste('final clean up and creating resulting GRS file as',outputFile))
 
 finalGRS <- finalGRS[,c(which(colnames(finalGRS) %in% c('IID','FID')),which(!colnames(finalGRS) %in% c('IID','FID')))]
 #Final formatting
