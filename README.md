@@ -17,13 +17,13 @@ Start by running the setup:
 
 `./0_setup.sh path-to-impute-folder-with-vcfs`
 
-(Optinal) Start with creating the formatted vcf-file for R by:
+(Optinal) Create the formatted vcf-file for R by:
 
 `./1_create_geno_from_vcf.sh SNPlist.csv`
 
 When finished (quits after submitting two scripts to the grid-engine (check with qstat -f)) two files are created in the folder: `genoFile.noHead` and `newHeader` along some gridengine outputs
 
-Then just run the wrapper for the main script with the arguments as follows:
+Then just run the wrapper for the main script with the arguments as follows (if you didn't automatically create the formatted VCF-file then you must manually create genoFile.noHead and newHeader with those name precisely):
 
 `./runGRSscript.sh SNPlist.csv GRS.spec IDs.list (pval-cutoff outputName)`
 
@@ -35,4 +35,4 @@ At the end you can add the optinal arguments (in brackets) in the order:
 
 `LD-cutoff` (default 0.8). Threshold for pruning SNPs with a R2 above cutoff.
 
-By Vincent Appel as of 11/11/2016
+By Vincent Appel
