@@ -21,7 +21,7 @@ Start by running the setup:
 
 `./1_create_geno_from_vcf.sh SNPlist.csv`
 
-When finished (quits after submitting two scripts to the grid-engine (check with qstat -f)) two files are created in the folder: `genoFile.noHead` and `newHeader`
+When finished (quits after submitting two scripts to the grid-engine (check with qstat -f)) two files are created in the folder: `genoFile.noHead` and `newHeader` along some gridengine outputs
 
 Then just run the wrapper for the main script with the arguments as follows:
 
@@ -29,8 +29,10 @@ Then just run the wrapper for the main script with the arguments as follows:
 
 At the end you can add the optinal arguments (in brackets) in the order:
 
-`pval-cutoff` (default=5e-8 (GWAS significant)
+`outputName` (default='GRS.output'). Name of outputfile.
 
-`outputName` (default='GRS.output')
+`pval-cutoff` (default=5e-8 (GWAS significant)). Threshold for inclusion of SNPs in GRS.
+
+`LD-cutoff` (default 0.8). Threshold for pruning SNPs with a R2 above cutoff.
 
 By Vincent Appel as of 11/11/2016

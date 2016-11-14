@@ -4,4 +4,4 @@ specFile=$1; shift
 idsFile=$1; shift
 otherArguments=$@
 
-./create_GRS.R $snpListFile genoFile.noHead newHeader $specFile $idsFile $otherArguments 
+./create_GRS.R $snpListFile genoFile.noHead newHeader $specFile $idsFile geno/ldprune.ld $otherArguments 

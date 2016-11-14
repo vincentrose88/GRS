@@ -6,9 +6,10 @@ genoFile <- args[2]
 headerFile <- args[3]
 specFile <- args[4]
 idsFile <- args[5]
-outputFile <- args[6]
-pvalCutoff <- args[7]
-
+ldFile <- args[6]
+outputFile <- args[7]
+pvalCutoff <- args[8]
+ldCutoff <- args[9]
 
 if(is.na(pvalCutoff)){
     pvalCutoff <- 5e-8
@@ -16,6 +17,11 @@ if(is.na(pvalCutoff)){
 if(is.na(outputFile)){
     outputFile <- 'GRS.output'
 }
+if(is.na(ldCutoff)){
+    ldCutoff <- 0.8
+}
+
+
 
 #Getting genotypes and adding header myself, as read.table is fuzzy
 #geno <- read.table('all.SNPs.forR.noHeader',h=F,as.is=T)
@@ -38,9 +44,12 @@ t <- merge(geno,lit,by.x=c('CHROM','ID'),by.y=c('Chr','SNP'))
 #List of particids
 #ids <- read.csv2('../lists/birthdate.csv',as.is=T)
 #idsFormatted <- paste0(substr(paste0('57x',ids$subjid),1,5),'-',substr(paste0('57x',ids$subjid),6,nchar(paste0('57x',ids$subjid))))
-ids <- read.table(idsFile,h=F,as.is=T)
+idsdf <- read.table(idsFile,h=F,as.is=T)
+idNames <- idsdf$V1
+ids <- which(colnames(final) %in% idNames)
 
-final <- t[,colnames(t) %in% c('ID','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','CHR','POS','Pos','GRS.type','Trait','Locus','Note','N','P.value',ids)]
+final <- t[,colnames(t) %in% c('ID','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','CHR','POS','Pos','GRS.type','Trait','Locus','Note','N','P.value',idNames)]
+
 
 #Strand flip function
 strandFlip <- function(x){
@@ -89,6 +98,8 @@ alleleChecker <- function(x,ref='REF',alt='ALT',eff='Effect.Allele',nonEff='Othe
 }
 
 final$case <- apply(final,1,alleleChecker)
+ids <- which(colnames(final) %in% idNames)
+
 finalBeforeFlip <- final
 
 #Flip those which have cases 1 or 3
@@ -143,7 +154,8 @@ if(!is.null(worst)){
 
 
 # LD prune
-ld <- read.table('ldprune/plink.ld',h=T,as.is=T)
+ld <- read.table(ldFile,h=T,as.is=T)
+ld <- ld[ld$R2 > ldCutoff,] #Only look at SNPs with a R2 above 0.8 (default ldCutoff value)
 ldSNPsINFO <- final[final$ID %in% c(ld$SNP_A,ld$SNP_B),c('ID','Trait','P.value')]
 tmp <- merge(ld,ldSNPsINFO,by.x='SNP_A',by.y='ID',all.x=T)
 ld <- merge(tmp,ldSNPsINFO,by.x='SNP_B',by.y='ID',all.x=T)
@@ -188,6 +200,7 @@ finalWithLDINFO <- merge(final,pruneC,by.x='ID',by.y='SNP',all.x=T)
 #Formatting clean up (info (16 columns), then genotypes (17 column to the end) and removing the redundant Pos
 final <- finalWithLDINFO[,c(which(!colnames(finalWithLDINFO) %in% ids),which(colnames(finalWithLDINFO) %in% ids))]
 final <- final[,-which(colnames(final)=='Pos')]
+ids <- which(colnames(final) %in% idNames)
 
 GRS <- NULL
 for(trait in unique(final$Trait)){
