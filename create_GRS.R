@@ -295,7 +295,7 @@ for(i in 1:nrow(GRStypes)){
     tmp <- lapply(strsplit(final$pruneReason,' '),function(x){x %in% c(normalTrait,specialTrait)})
     pruneRows <- sapply(tmp,sum) #Using sum to substract the same SNP away the right amount of times
     newGRS <- NULL
-    if(is.null(specialTrait){ #No special/minus traits
+    if(is.null(specialTrait)){ #No special/minus traits
         for(x in 1:nrow(GRS)){
             newGRS <- c(newGRS,
                         sum(GRS[x,colnames(GRS) %in% normalTrait])
