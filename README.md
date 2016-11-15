@@ -2,7 +2,7 @@
 ##You'll need the following:
 A csv-file (american with ',' as seperator) (referred as `SNPlist.csv`) with the SNPs from the litterature you want in your GRS. **NB: Has to be in the same format as example.list**
 
-A spec-file (referred as `GRS.spec`) where you specify which GRS or combinations of GRS you want. Again format is important - see exapmle
+A spec-file (referred as `GRS.spec`) where you specify which GRS or combinations of GRS you want. Again format is important - see example (only - and + is allowed, no spaces, one GRS pr. line)
 
 A id-file (reffered as `IDs.list`) with the IDs of the individuals in your study. **NB: Has to be exactly as in your VCF header. Check beforehand**
 

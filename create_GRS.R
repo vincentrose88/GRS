@@ -219,25 +219,97 @@ GRS <- as.data.frame(GRS)
 GRS$IID <- idRows
 GRS$FID <- idRows
 
-# Testing case - replace with input file:
-#GRStypes <- as.data.frame(c('HDL+LDL','FG+FI','HDL+Chol+TC'),stringsAsFactors=F)
-#colnames(GRStypes) <- 'V1'
-
+#Read in GRS.spec
 GRStypes <- read.table(specFile,h=F,as.is=T)
+
+#Format GRS spec to traits and sign (+ or -)
+
+
+
+
 
 finalGRS <- GRS
 #Loops through the combined GRS and findes the SNPs that needs to be substracted to avoid double counting due to LD
 for(i in 1:nrow(GRStypes)){
     #This is quite 'hacky' but it works
     traitsInGRS <- strsplit(GRStypes[i,],'+',fixed=T)[[1]]
-    tmp <- lapply(strsplit(final$pruneReason,' '),function(x){x %in% traitsInGRS})
-    pruneRows <- sapply(tmp,sum)
+    if(any(grepl('-',traitsInGRS,fixed=T))){ #Finding and splitting off traits with minus for proper formatting
+        normalTrait <-  traitsInGRS[-which(grepl('-',traitsInGRS,fixed=T))] #Normal trait is added together
+        notNormalTrait <- traitsInGRS[which(grepl('-',traitsInGRS,fixed=T))] #Special traits is substracted from normal Traits (see example below)
+        specialTrait <- NULL
+        # Three possibilites:
+        ## 1. only one minus trait (fx HDL)
+        ## 2. two minus traits next to eachother (fx LDL-HDL-TG)
+        ## 3. two minus traits far from eachother (fx LDL-HDL+Chol-TG)
+        #First case is easy, 2nd og 3rd not so.
+        ##Case 1:
+        if(length(notNormalTrait)==1){
+            minusPos <- regexpr('-',notNormalTrait,fixed=T)[1]
+            normalTrait <- c(normalTrait,substr(notNormalTrait,1,minusPos-1))
+            leftOver <- substr(notNormalTrait,minusPos+1,nchar(notNormalTrait))
+            if(grepl('-',leftOver,fixed=T)){
+                ##Case 2:
+                while(grepl('-',leftOver,fixed=T)){ #Keeps adding traits to special traits from leftOver as long as there are minuses to find
+                    #Just as Case 1, but replacing normalTrait with specialTrait
+                    #and specialTrait with Leftover
+                    #and loops with while
+                    minusPos <- regexpr('-',leftOver,fixed=T)[1]
+                    specialTrait <- c(specialTrait,substr(leftOver,1,minusPos-1)) #Now adding to 
+                    leftOver <- substr(leftOver,minusPos+1,nchar(leftOver))
+                }
+                specialTrait <- c(specialTrait,leftOver) #Collect to last special trait from leftOver
+            }else{
+                ##Case 1: Only one trait in leftOver which is special
+                specialTrait <- leftOver
+            }
+        }else if(length(notNormalTrait)>1){
+            ## Case 3 - the longest one - each element can be a case 1 or 2, thus we just do the same as above, and collect smartly:
+            caseThree <- notNormalTrait
+            for(j in 1:length(caseThree)){
+                notNormalTrait <- caseThree[j]
+                minusPos <- regexpr('-',notNormalTrait,fixed=T)[1]
+                normalTrait <- c(normalTrait,substr(notNormalTrait,1,minusPos-1))
+                leftOver <- substr(notNormalTrait,minusPos+1,nchar(notNormalTrait))
+                if(grepl('-',leftOver,fixed=T)){
+                    ##Case 2:
+                    while(grepl('-',leftOver,fixed=T)){ #Keeps adding traits to special traits from leftOver as long as there are minuses to find
+                    #Just as Case 1, but replacing normalTrait with specialTrait
+                    #and specialTrait with Leftover
+                    #and loops with while
+                        minusPos <- regexpr('-',leftOver,fixed=T)[1]
+                        specialTrait <- c(specialTrait,substr(leftOver,1,minusPos-1)) #Now adding to 
+                        leftOver <- substr(leftOver,minusPos+1,nchar(leftOver))
+                    }
+                    specialTrait <- c(specialTrait,leftOver) #Collect to last special trait from leftOver
+                }else{
+                    ##Case 1: Only one trait in leftOver which is special
+                    specialTrait <- c(specialTrait,leftOver)
+                }
+            }
+        }
+    }else{ #No minus/special traits
+        normalTrait <- traitsInGRS
+        specialTrait <- NULL
+    }
+
+    tmp <- lapply(strsplit(final$pruneReason,' '),function(x){x %in% c(normalTrait,specialTrait)})
+    pruneRows <- sapply(tmp,sum) #Using sum to substract the same SNP away the right amount of times
     newGRS <- NULL
-    for(x in 1:nrow(GRS)){
-        newGRS <- c(newGRS,
-                    sum(GRS[x,colnames(GRS) %in% traitsInGRS])
-                    - sum(pruneRows*final[,colnames(final)==GRS[x,'IID']])
-                    )
+    if(is.null(specialTrait){ #No special/minus traits
+        for(x in 1:nrow(GRS)){
+            newGRS <- c(newGRS,
+                        sum(GRS[x,colnames(GRS) %in% normalTrait])
+                        - sum(pruneRows*final[,colnames(final)==GRS[x,'IID']])
+                        )
+        }
+    }else{
+        for(x in 1:nrow(GRS)){
+            newGRS <- c(newGRS,
+                        sum(GRS[x,colnames(GRS) %in% normalTrait])
+                        - sum(GRS[x,colnames(GRS) %in% specialTrait])
+                        - sum(pruneRows*final[,colnames(final)==GRS[x,'IID']])
+                        )
+        }
     }
     finalGRS <- cbind(finalGRS,newGRS)
     colnames(finalGRS)[ncol(finalGRS)] <- GRStypes[i,]
