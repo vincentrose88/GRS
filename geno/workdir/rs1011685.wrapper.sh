@@ -1,0 +1,1 @@
+grep -w rs1011685 <(zcat ../imputed/all.chr.8.18176818-20176818.vcf.gz) > ../8.19830769.snps.on.vcf
