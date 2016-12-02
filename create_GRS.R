@@ -214,12 +214,6 @@ final <- final[,-which(colnames(final)=='Pos')]
 ids <- which(colnames(final) %in% idNames)
 
 #Filter on note - special case
-
-
-
-
-print(paste('calculating GRS as specified by',specFile))
-
 GRS <- NULL
 for(trait in unique(final$Trait)){
     tmp <- as.data.frame(apply(final[final$Trait==trait,ids],2,sum))
