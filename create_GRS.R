@@ -4,9 +4,9 @@ args <- commandArgs(trailingOnly=T)
 snpListFile <- args[1]
 genoFile <- args[2]
 headerFile <- args[3]
-specFile <- args[4]
-idsFile <- args[5]
-ldFile <- args[6]
+idsFile <- args[4]
+ldFile <- args[5]
+specFile <- args[6]
 outputFile <- args[7]
 pvalCutoff <- args[8]
 ldCutoff <- args[9]
@@ -39,6 +39,13 @@ lit$N <- as.numeric(lit$N)
 lit$Effect <- as.numeric(lit$Effect)
 lit$EAF <- as.numeric(lit$EAF)
 lit$P.value <- as.numeric(lit$P.value)
+
+#Hacking the god damn exm-snps:
+exmGeno <- geno[grep('exm-',geno[,3]),3]
+exGenoFix <- substr(exmGeno,5,nchar(exmGeno))
+geno[grep('exm-',geno[,3]),3] <- exGenoFix
+
+
 
 #Merging with chromosome and rsID (not position, as different build might be an issue)
 t <- merge(geno,lit,by.x=c('CHROM','ID'),by.y=c('Chr','SNP'))
@@ -206,6 +213,11 @@ final <- finalWithLDINFO[,c(which(!colnames(finalWithLDINFO) %in% ids),which(col
 final <- final[,-which(colnames(final)=='Pos')]
 ids <- which(colnames(final) %in% idNames)
 
+#Filter on note - special case
+
+
+
+
 print(paste('calculating GRS as specified by',specFile))
 
 GRS <- NULL
@@ -219,14 +231,15 @@ GRS <- as.data.frame(GRS)
 GRS$IID <- idRows
 GRS$FID <- idRows
 
+
+#If no combination GRS is requested, ie GRS.spec is NA, then don't try anything funny.
+if(!is.na(specFile)){
+
 #Read in GRS.spec
 GRStypes <- read.table(specFile,h=F,as.is=T)
 
+
 #Format GRS spec to traits and sign (+ or -)
-
-
-
-
 
 finalGRS <- GRS
 #Loops through the combined GRS and findes the SNPs that needs to be substracted to avoid double counting due to LD
@@ -314,6 +327,11 @@ for(i in 1:nrow(GRStypes)){
     finalGRS <- cbind(finalGRS,newGRS)
     colnames(finalGRS)[ncol(finalGRS)] <- GRStypes[i,]
 }
+
+}else{
+	finalGRS <- GRS
+}
+
 
 print(paste('final clean up and creating resulting GRS file as',outputFile))
 
