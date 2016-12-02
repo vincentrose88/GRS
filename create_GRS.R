@@ -236,8 +236,14 @@ print(paste('calculating GRS as specified by',specFile))
 
 GRS <- NULL
 for(trait in unique(completeFinal$Trait)){
-    tmp <- as.data.frame(apply(completeFinal[completeFinal$Trait==trait,ids],2,sum))
+    inGRS <- completeFinal[completeFinal$Trait==trait,]
+    tmp <- as.data.frame(apply(inGRS[,ids],2,sum))
     colnames(tmp) <- trait
+    #Normalzing the weighted GRS
+    if(grepl('weighted',trait)){
+        normalizing <- nrow(inGRS)/sum(inGRS$Effect,na.rm=T)
+        tmp <- tmp*normalizing
+    }
     idRows <- rownames(tmp) #Checked manually that it is the same for each iteration
     GRS <- c(GRS,tmp)
 }
