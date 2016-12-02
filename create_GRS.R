@@ -213,10 +213,30 @@ final <- finalWithLDINFO[,c(which(!colnames(finalWithLDINFO) %in% ids),which(col
 final <- final[,-which(colnames(final)=='Pos')]
 ids <- which(colnames(final) %in% idNames)
 
-#Filter on note - special case
+
+#Adding SNPs with weights
+wFinal <- final[,ids]*final[,'Effect']
+wFinal$ID <- paste(final$ID,'weighted',sep='_')
+wFinal$Trait <- paste(final$Trait,'weighted',sep='_')
+
+#copying the rest of the final data-frame
+for(col in colnames(final)[!colnames(final) %in% colnames(wFinal)]){
+    wFinal[,col] <- final[,col]
+}
+#Just some ordering to have the same format
+final <- final[,order(colnames(final),decreasing=T)]
+wFinal <- wFinal[,order(colnames(wFinal),decreasing=T)]
+
+#Binding everything together (IDs are different for SNPs, so should be fine
+completeFinal <- rbind(final,wFinal)
+ids <- which(colnames(completeFinal) %in% idNames)
+
+
+print(paste('calculating GRS as specified by',specFile))
+
 GRS <- NULL
-for(trait in unique(final$Trait)){
-    tmp <- as.data.frame(apply(final[final$Trait==trait,ids],2,sum))
+for(trait in unique(completeFinal$Trait)){
+    tmp <- as.data.frame(apply(completeFinal[completeFinal$Trait==trait,ids],2,sum))
     colnames(tmp) <- trait
     idRows <- rownames(tmp) #Checked manually that it is the same for each iteration
     GRS <- c(GRS,tmp)
