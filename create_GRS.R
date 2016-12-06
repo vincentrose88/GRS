@@ -40,8 +40,12 @@ lit$Effect <- as.numeric(lit$Effect)
 lit$EAF <- as.numeric(lit$EAF)
 lit$P.value <- as.numeric(lit$P.value)
 
+maf <- read.table('geno/maf.frq',h=T,as.is=T)
+colnames(maf)[3:4] <- c('minor.allele','major.allele')
+
 #Merging with chromosome and rsID (not position, as different build might be an issue)
-t <- merge(geno,lit,by.x=c('CHROM','ID'),by.y=c('Chr','SNP'))
+tmp <- merge(geno,lit,by.x=c('CHROM','ID'),by.y=c('Chr','SNP'))
+t <- merge(tmp,maf,by.x=c('CHROM','ID'),by.y=c('CHR','SNP'))
 
 #List of particids
 #ids <- read.csv2('../lists/birthdate.csv',as.is=T)
@@ -51,7 +55,7 @@ idNames <- idsdf$V1
 
 ids <- which(colnames(t) %in% idNames)
 
-final <- t[,colnames(t) %in% c('ID','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','CHR','POS','Pos','GRS.type','Trait','Locus','Note','N','P.value',idNames)]
+final <- t[,colnames(t) %in% c('ID','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','minor.allele','major.allele','MAF','CHR','POS','Pos','GRS.type','Trait','Locus','Note','N','P.value',idNames)]
 
 #Strand flip function
 strandFlip <- function(x){
@@ -73,14 +77,76 @@ strandFlip <- function(x){
 #Allele checker function
 alleleChecker <- function(x,ref='REF',alt='ALT',eff='Effect.Allele',nonEff='Other.Allele'){
     #5 cases:
+    #Special case when: (REF/ALT || eff/nonEff)==(A/T || G/C). Doublecheck with Minor allele==ref/alt when proceeding:
     #1: REF==eff &&  ALT==nonEff -> Flip!
     #2: REF==nonEff && ALT==eff -> Do nothing
-    #3: REF==strandFlip(eff) && ALT==strandFlip(nonEff) -> Flip!
+    #3: REF==strandFlip(eff) && ALT==strandFlip(nonEff) -> Flip! (allele and strand)
     #4: REF==strandFlip(nonEff) && ALT==strandFlip(eff) -> No allele flip but a strand flip is nice.
-    #5: if REF and ALT doesn't match either of the alleles -> (throw error and/or) return NA
+    #NA-case: if REF and ALT doesn't match either of the alleles -> (throw error and/or) return NA
     
     case <- NA
-    if(x[ref]==x[eff] & x[alt]==x[nonEff]){
+    if(((x[ref]=='A' & x[alt]=='T') | (x[ref]=='T' & x[alt]=='A')
+        ) | (
+        (x[ref]=='G' & x[alt]=='C') | (x[ref]=='C' & x[alt]=='G')
+        )
+       ){
+        ## Special case - split into EAF above or below 50%
+        ### New variable MAF decide if MAF is in the same 'direction' as EAF
+        ##4 cases in each catagory (shown for when EAF<50%)
+        #1 maf flip: MafDir = FALSE, eff=ref. ACTION: Allele FLIP (case 1)
+        #2 strand flip: MafDir = TRUE, eff=ref. Action: Strand FLIP (case 4)
+        #3 Everything checks out: MafDir = TRUE, eff=alt: Do nothing (case 2)
+        #4 maf and strand flip: MafDir = FALSE, eff=alt: Allele and strand FLIP (case 3)
+        ##When EAF > 50% the alt needs to be the eff, Then case 2<->1 and case 3<->4:
+        
+        #1 maf flip: MafDir = FALSE, eff=alt. Do Nothing (case 1->2)
+        #2 strand flip: MafDir = TRUE, eff=alt. Allele and Strand FLIP (case 4->3)
+        #3 Everything checks out: MafDir = TRUE, eff=ref: Allele FLIP (case 2->1)
+        #4 maf and strand flip: MafDir = FALSE, eff=ref: Strand FLIP (case 3->4)
+        
+        if(x['EAF']<0.5){ 
+            mafDir <- x['MAF']<0.5
+            if(!mafDir & (x[eff]==x[ref] & x[nonEff] == x[alt])){
+                case <- 2
+            }else if(mafDir & (x[eff]==x[ref] & x[nonEff] == x[alt])){
+                case <- 3
+            }else if(mafDir & (x[eff]==x[alt] & x[nonEff] == x[ref])){
+                case <- 1
+            }else if(!mafDir & (x[eff]==x[alt] & x[nonEff] == x[ref])){
+                case <- 4
+            }else if(x[ref]!=x[eff] & x[ref]!=x[nonEff] & x[ref]!=strandFlip(x[eff]) & x[ref]!=strandFlip(x[nonEff])){
+                #Old catcher of mismatches of alleles (regardless of MAF/EAF mismatch)
+                case <- NA
+            }else{ # Nothing, really NOTHING fits.
+                print('Special A/T or G/C allele, but nothing fits')
+                print('No matching alleles found for the following SNP which is discarded:')
+                print(x[c('ID','POS',ref,alt,eff,nonEff,'MAF','EAF')])
+                print('------------Check your list of SNPs - site might be triallelic----------------------------')
+                case <- NA
+            }
+        }else if(x['EAF']>=0.5){
+            mafDir <- x['MAF']>=0.5
+            if(!mafDir & (x[eff]==x[alt] & x[nonEff] == x[ref])){
+                case <- 1
+            }else if(mafDir & (x[eff]==x[alt] & x[nonEff] == x[ref])){
+                case <- 4
+            }else if(mafDir & (x[eff]==x[ref] & x[nonEff] == x[alt])){
+                case <- 2
+            }else if(!mafDir & (x[eff]==x[ref] & x[nonEff] == x[alt])){
+                case <- 3
+            }else if(x[ref]!=x[eff] & x[ref]!=x[nonEff] & x[ref]!=strandFlip(x[eff]) & x[ref]!=strandFlip(x[nonEff])){
+                #Old catcher of mismatches of alleles (regardless of MAF/EAF mismatch)
+                case <- NA
+            }else{ # Nothing, really NOTHING fits.
+                print('Special A/T or G/C allele, but nothing fits')
+                print('No matching alleles found for the following SNP which is discarded:')
+                print(x[c('ID','POS',ref,alt,eff,nonEff,'MAF','EAF')])
+                print('------------Check your list of SNPs - site might be triallelic----------------------------')
+                case <- NA
+            }
+        }
+        #Back to 'normal' SNPs
+    }else if(x[ref]==x[eff] & x[alt]==x[nonEff]){
         case <- 1
     }else if(x[ref]==x[nonEff] & x[alt]==x[eff]){
         case <- 2
@@ -105,7 +171,7 @@ ids <- which(colnames(final) %in% idNames)
 finalBeforeFlip <- final
 print('flipping alleles...')
 
-#Flip those which have cases 1 or 3
+#Flip those which have cases 1 or 3 (for case 3 this automatically fixes the strandflip)
 for(snp in which(final$case %in% c(1,3))){   
     final[snp,ids] <- -final[snp,ids]+2
     final[snp,'ALT'] <- final[snp,'Effect.Allele']
