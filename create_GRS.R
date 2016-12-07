@@ -41,7 +41,29 @@ lit$EAF <- as.numeric(lit$EAF)
 lit$P.value <- as.numeric(lit$P.value)
 
 maf <- read.table('geno/maf.frq',h=T,as.is=T)
-colnames(maf)[3:4] <- c('minor.allele','major.allele')
+maf <- maf[,-c(3:4,6)]
+
+#Removing tri-allelic sites from the MAF support file to avoid merging articafts. They are still kept in the geno file.
+if(length(unique(maf$SNP)) < length(maf$SNP)){
+    worstMafCand <- NULL
+    for(triSNP in maf$SNP[duplicated(maf$SNP)]){
+
+        mafCand <-  maf[maf$SNP == triSNP,]
+        litEAF  <- lit[lit$SNP ==triSNP,'EAF']
+        worstMafCand <- c(worstMafCand,
+                          as.integer(
+                              row.names(
+                                  mafCand[which(
+                                      abs(mafCand$MAF-litEAF)==max(abs(mafCand$MAF-litEAF)))
+                                          #Saving only the SNP which has a MAF closest to that of the EAF
+                                          ,]
+                                  )
+                              )
+                          )
+    }
+    maf <- maf[-worstMafCand,]
+}
+
 
 #Merging with chromosome and rsID (not position, as different build might be an issue)
 tmp <- merge(geno,lit,by.x=c('CHROM','ID'),by.y=c('Chr','SNP'))
@@ -55,7 +77,7 @@ idNames <- idsdf$V1
 
 ids <- which(colnames(t) %in% idNames)
 
-final <- t[,colnames(t) %in% c('ID','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','minor.allele','major.allele','MAF','CHR','POS','Pos','GRS.type','Trait','Locus','Note','N','P.value',idNames)]
+final <- t[,colnames(t) %in% c('ID','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','MAF','CHR','POS','Pos','GRS.type','Trait','Locus','Note','N','P.value',idNames)]
 
 #Strand flip function
 strandFlip <- function(x){
@@ -90,6 +112,7 @@ alleleChecker <- function(x,ref='REF',alt='ALT',eff='Effect.Allele',nonEff='Othe
         (x[ref]=='G' & x[alt]=='C') | (x[ref]=='C' & x[alt]=='G')
         )
        ){
+#        print(x[c('ID','POS',ref,alt,eff,nonEff,'MAF','EAF','Effect','N')])
         ## Special case - split into EAF above or below 50%
         ### New variable MAF decide if MAF is in the same 'direction' as EAF
         ##4 cases in each catagory (shown for when EAF<50%)
@@ -120,7 +143,7 @@ alleleChecker <- function(x,ref='REF',alt='ALT',eff='Effect.Allele',nonEff='Othe
             }else{ # Nothing, really NOTHING fits.
                 print('Special A/T or G/C allele, but nothing fits')
                 print('No matching alleles found for the following SNP which is discarded:')
-                print(x[c('ID','POS',ref,alt,eff,nonEff,'MAF','EAF')])
+                print(x[c('ID','POS',ref,alt,eff,nonEff,'MAF','EAF','N','Effect')])
                 print('------------Check your list of SNPs - site might be triallelic----------------------------')
                 case <- NA
             }
@@ -140,7 +163,7 @@ alleleChecker <- function(x,ref='REF',alt='ALT',eff='Effect.Allele',nonEff='Othe
             }else{ # Nothing, really NOTHING fits.
                 print('Special A/T or G/C allele, but nothing fits')
                 print('No matching alleles found for the following SNP which is discarded:')
-                print(x[c('ID','POS',ref,alt,eff,nonEff,'MAF','EAF')])
+                print(x[c('ID','POS',ref,alt,eff,nonEff,'MAF','EAF','N','Effect')])
                 print('------------Check your list of SNPs - site might be triallelic----------------------------')
                 case <- NA
             }
@@ -158,12 +181,15 @@ alleleChecker <- function(x,ref='REF',alt='ALT',eff='Effect.Allele',nonEff='Othe
         case <- NA
     }else{
         print('No matching alleles found for the following SNP which is discarded:')
-        print(x[c('ID','POS',ref,alt,eff,nonEff)])
+        print(x[c('ID','POS',ref,alt,eff,nonEff,'EAF','N','Effect')])
         print('------------Check your list of SNPs - site might be triallelic----------------------------')
         case <- NA
     }
     return(case)    
 }
+
+
+
 
 final$case <- apply(final,1,alleleChecker)
 ids <- which(colnames(final) %in% idNames)
