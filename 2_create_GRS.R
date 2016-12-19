@@ -13,6 +13,7 @@ ldCutoff <- 0.8
 
 ##Args with flags
 for(i in 1:length(args)){
+    print(args[i])
     if(args[i]=='--snp'){
         snpListFile <- args[i+1]
     }else if(args[i]=='--geno'){
@@ -31,13 +32,12 @@ for(i in 1:length(args)){
         pvalCutoff <- args[i+1]
     }else if(args[i]=='--ldcut'){
         ldCutoff <- args[i+1]
-    }else{
+    }else if(grepl('--',args[i])){
         print('flag not recognized or missing. Exiting..')
         q()
     }
 }
 
-print(args)
 print('loading in files')
 
 
@@ -353,6 +353,7 @@ GRS$FID <- idRows
 
 
 #Read in GRS.spec
+if(!is.na(specFile)){
 GRStypes <- read.table(specFile,h=F,as.is=T)
 
 #Format GRS spec to traits and sign (+ or -)
@@ -441,6 +442,9 @@ for(i in 1:nrow(GRStypes)){
     }
     finalGRS <- cbind(finalGRS,newGRS)
     colnames(finalGRS)[ncol(finalGRS)] <- GRStypes[i,]
+}
+}else{
+    finalGRS <- GRS
 }
 
 print(paste('final clean up and creating resulting GRS file as',outputFile))
