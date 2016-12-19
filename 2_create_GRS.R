@@ -1,24 +1,40 @@
 #!/usr/bin/Rscript
 args <- commandArgs(trailingOnly=T)
 
-snpListFile <- args[1]
-genoFile <- args[2]
-headerFile <- args[3]
-specFile <- args[4]
-idsFile <- args[5]
-ldFile <- args[6]
-outputFile <- args[7]
-pvalCutoff <- args[8]
-ldCutoff <- args[9]
+snpListFile <- NA
+genoFile <- 'genoFile.noHead'
+headerFile <- 'newHeader'
+specFile <- NA
+idsFile <- NA
+ldFile <- 'geno/ldprune.ld'
+outputFile <- 'GRS.output'
+pvalCutoff <- 5e-8
+ldCutoff <- 0.8
 
-if(is.na(pvalCutoff)){
-    pvalCutoff <- 5e-8
-}
-if(is.na(outputFile)){
-    outputFile <- 'GRS.output'
-}
-if(is.na(ldCutoff)){
-    ldCutoff <- 0.8
+##Args with flags
+for(i in 1:length(args)){
+    if(args[i]=='--snp'){
+        snpListFile <- args[i+1]
+    }else if(args[i]=='--geno'){
+        genoFile <- args[i+1]
+    }else if(args[i]=='--head'){
+        headerFile <- args[i+1]
+    }else if(args[i]=='--spec'){
+        specFile <- args[i+1]
+    }else if(args[i]=='--ids'){
+        idsFile <- args[i+1]
+    }else if(args[i]=='--ldfile'){
+        ldFile <- args[i+1]
+    }else if(args[i]=='--out'){
+        outputFile <- args[i+1]
+    }else if(args[i]=='--pcut'){
+        pvalCutoff <- args[i+1]
+    }else if(args[i]=='--ldcut'){
+        ldCutoff <- args[i+1]
+    }else{
+        print('flag not recognized or missing. Exiting..')
+        q()
+    }
 }
 
 print(args)

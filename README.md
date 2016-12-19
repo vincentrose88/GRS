@@ -42,16 +42,18 @@
 
   * When finished (quits after submitting two scripts to the grid-engine (check with qstat -f)) two files are created in the folder: `genoFile.noHead` and `newHeader` along some gridengine outputs
 
-3. Then just run the wrapper for the main script with the arguments as follows (if you didn't automatically create the formatted VCF-file then you must manually create genoFile.noHead and newHeader with those name precisely):
+3. Then run the main script with the arguments as follows. If you have created your own geno file, header and/or ld-file, then these can be specified with --geno, --head and --ldfile, repectively.
 
-  * `./2_runGRSscript.sh SNPlist.csv GRS.spec IDs.list (pval-cutoff outputName)`
+  * `./2_create_GRS.R --snp SNPlist.csv --ids IDs.list --spec GRS.spec --out example --pcut 1e-7 --ldcut 0.5`
 
-    * At the end you can add the optinal arguments (in brackets) in the order:
+    * Besides the two first arguments (--snp and --ids) everything else is optinal:
+    
+      * `--spec` Name of file containting specifications for how to combine GRSs. See example `GRS.spec`
 
-      * `outputName` (default='GRS.output'). Name of outputfile.
+      * `--out` (default='GRS.output'). Name of outputfile.
 
-      * `pval-cutoff` (default=5e-8 (GWAS significant)). Threshold for inclusion of SNPs in GRS.
+      * `--pcut` (default=5e-8 (GWAS significant)). Threshold for inclusion of SNPs in GRS.
 
-      * `LD-cutoff` (default 0.8). Threshold for pruning SNPs with a R2 above cutoff.
+      * `--ldcut` (default 0.8). Threshold for pruning SNPs with a R2 above cutoff.
 
 By Vincent Appel
