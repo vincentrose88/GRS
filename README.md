@@ -10,6 +10,9 @@
       * used as N, but also when using a p-value cut-off for what to include in your GRS
     * Chr and position
       * used to extract genotypes from VCF-file
+      * **NB:** chromosome and position on build 37 (same as HRC panel)
+       * Use online tool, such as https://www.ncbi.nlm.nih.gov/SNP/dbSNP.cgi?list=rslist
+
     * Effect (only for a weighted GRS)
       * measured in standard deviations (SD) from a rank-normalized transformation. **Check your paper**
     * Effect Allele Frequency (EAF)

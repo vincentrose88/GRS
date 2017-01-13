@@ -223,7 +223,7 @@ for(snp in which(final$case %in% c(1,3))){
 final <- final[!is.na(final$case),]
 
 #Flip strand on case 4:
-for(snp in which(final$case==2)){   
+for(snp in which(final$case==4)){   
     final[snp,'ALT'] <- strandFlip(final[snp,'ALT'])
     final[snp,'REF'] <- strandFlip(final[snp,'REF'])
 }
