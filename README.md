@@ -12,9 +12,9 @@
       * used to extract genotypes from VCF-file
     * Effect (only for a weighted GRS)
       * measured in standard deviations (SD) from a rank-normalized transformation. **Check your paper**
+    * Effect Allele Frequency (EAF)
 
   * Non-crucial, but nice to have for later comparison:
-    * Effect Allele Frequency (EAF)
     * Locus or nearest gene
     * Note for notes
 
