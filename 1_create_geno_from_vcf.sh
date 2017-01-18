@@ -1,7 +1,7 @@
 #!/bin/bash
 snpListFile=$1; shift
 
-cut -d',' -f3,4 $snpListFile | tr ',' '\t' | sort -nk2 > SNP_CHR.tmp
+cut -d',' -f2,3 $snpListFile | tr ',' '\t' | sort -nk2 > SNP_CHR.tmp
 for i in {1..22}
 do
     awk -v "chr=$i" '$2==chr {print $1}' SNP_CHR.tmp > geno/$i.snps
