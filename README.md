@@ -11,7 +11,7 @@ example.list**
       * used as N, but also when using a p-value cut-off for what to include in your GRS
     * Chr and position
       * used to extract genotypes from VCF-file
-      * **NB:** chromosome and position on build 37 (same as HRC panel)
+      * **NB:** rs names is used to find genotype data, and thus should be checked
 
     * Effect (only for a weighted GRS)
       * measured in standard deviations (SD) from a rank-normalized transformation. **Check your paper**
