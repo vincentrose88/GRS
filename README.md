@@ -1,6 +1,7 @@
 #Gene Risk Score automatical turn and twists automatically from vcf file and specs
 ##You'll need the following:
-1. A csv-file (american with ',' as seperator) (referred as `SNPlist.csv`) with the SNPs from the litterature you want in your GRS. **NB: Has to be in the same format as example.list**
+ 1. A csv-file (american with ',' as seperator) (referred as `SNPlist.csv`) with the SNPs from the litterature you want in your GRS. **NB: Has to be in the same format and order as 
+example.list**
     * Crucial info is: 
     * Effect allele and non-effect allele
     * SNP name (rs-number)
