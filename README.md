@@ -33,6 +33,10 @@ example.list**
 
 5. A good relation with me, Vincent, if the case of trouble-shooting.
 
+6. You migth want to update your path to have the same programs as me, so edit your `.bashrc` file by:
+ * `nano ~/.bashrc`
+ * add `export PATH=$PATH:/home/fng514/bin:/home/cxt155/impute_v2.3.0_x86_64_static:/home/cxt155/bin:/home/cxt155/zlib_ex:/home/cxt155/samtools-bcftools-htslib-1.0_x64-linux`
+
 ##Running the program
 
 1. Start by running the setup:
