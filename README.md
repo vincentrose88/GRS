@@ -51,7 +51,7 @@ example.list**
 
 3. Then run the main script with the arguments as follows. If you have created your own geno file, header and/or ld-file, then these can be specified with --geno, --head and --ldfile, repectively.
 
-  * `./2_create_GRS.R --snp SNPlist.csv --ids IDs.list --spec GRS.spec --out example --pcut 1e-7 --ldcut 0.5`
+  * `./2_create_GRS.R --snp SNPlist.csv --ids IDs.list --spec GRS.spec --out example --pcut 1e-7 --ldcut 0.5 --SNPout SNPs.flipped` 
 
     * Besides the two first arguments (--snp and --ids) everything else is optinal:
     
@@ -62,5 +62,7 @@ example.list**
       * `--pcut` (default=5e-8 (GWAS significant)). Threshold for inclusion of SNPs in GRS.
 
       * `--ldcut` (default 0.8). Threshold for pruning SNPs with a R2 above cutoff.
+
+      * `--SNPout` (default NA, ie. not used). Name of file where the genotypes for all SNPs will be saved *AFTER* being flipped to match the litterature. REF is the non-effect allele, coded as 0, and ALT is the Effect allele, coded as 2. Used for other analysis.
 
 By Vincent Appel

@@ -10,6 +10,7 @@ ldFile <- 'geno/ldprune.ld'
 outputFile <- 'GRS.output'
 pvalCutoff <- 5e-8
 ldCutoff <- 0.8
+SNPout <- NA
 
 ##Args with flags
 for(i in 1:length(args)){
@@ -32,6 +33,8 @@ for(i in 1:length(args)){
         pvalCutoff <- args[i+1]
     }else if(args[i]=='--ldcut'){
         ldCutoff <- args[i+1]
+    }else if(args[i]=='--SNPout'){
+        SNPout <- args[i+1]
     }else if(grepl('--',args[i])){
         print('flag not recognized or missing. Exiting..')
         q()
@@ -128,7 +131,7 @@ alleleChecker <- function(x,ref='REF',alt='ALT',eff='Effect.Allele',nonEff='Othe
         (x[ref]=='G' & x[alt]=='C') | (x[ref]=='C' & x[alt]=='G')
         )
        ){
-#        print(x[c('ID','POS',ref,alt,eff,nonEff,'MAF','EAF','Effect','N')])
+        #print(x[c('ID','POS',ref,alt,eff,nonEff,'MAF','EAF','Effect','N')])
         ## Special case - split into EAF above or below 50%
         ### New variable MAF decide if MAF is in the same 'direction' as EAF
         ##4 cases in each catagory (shown for when EAF<50%)
@@ -313,6 +316,13 @@ finalWithLDINFO <- merge(final,pruneC,by.x='ID',by.y='SNP',all.x=T)
 final <- finalWithLDINFO[,c(which(!colnames(finalWithLDINFO) %in% ids),which(colnames(finalWithLDINFO) %in% ids))]
 final <- final[,-which(colnames(final)=='Pos')]
 ids <- which(colnames(final) %in% idNames)
+
+#If SNPout is not NA, save the genofile with flipped SNPs as the SNPout name
+if(!is.na(SNPout)){
+    print(paste('Saving genotypes for SNPs AFTER flips for other analysis in',SNPout))
+    write.table(final[,colnames(final) %in% c('ID','POS','REF','ALT','Trait',colnames(final)[ids])],SNPout,row.names=F,quote=F)
+}
+
 
 #Adding SNPs with weights
 wFinal <- final[,ids]*final[,'Effect']
