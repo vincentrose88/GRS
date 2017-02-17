@@ -43,11 +43,13 @@ example.list**
 
   * `./0_setup.sh path-to-impute-folder-with-vcfs`
 
-2. (Optinal) Create the formatted vcf-file for R by:
+2. (Optinal) Create the formatted vcf-file for R by (using the names of the SNPs to search through vcfs):
 
   * `./1_create_geno_from_vcf.sh SNPlist.csv`
 
   * When finished (quits after submitting two scripts to the grid-engine (check with qstat -f)) two files are created in the folder: `genoFile.noHead` and `newHeader` along some gridengine outputs
+
+  * **Alternatively, use the SNPextractor to extract SNPs more effectivly (from positions instead of names) and use the -g flag to get GRS ready output (`genoFile.noHead` and `newHeader`)**
 
 3. Then run the main script with the arguments as follows. If you have created your own geno file, header and/or ld-file, then these can be specified with --geno, --head and --ldfile, repectively.
 
@@ -64,5 +66,8 @@ example.list**
       * `--ldcut` (default 0.8). Threshold for pruning SNPs with a R2 above cutoff.
 
       * `--SNPout` (default NA, ie. not used). Name of file where the genotypes for all SNPs will be saved *AFTER* being flipped to match the litterature. REF is the non-effect allele, coded as 0, and ALT is the Effect allele, coded as 2. Used for other analysis.
+
+4. Output files will be the GRS, weighted and unweighted for each trait as well as all combinations specified in the .spec file along with `Litterature_SNPs_not_extracted` listing the SNPs not succesfully extracted
+
 
 By Vincent Appel
