@@ -59,6 +59,10 @@ lit$Effect <- as.numeric(lit$Effect)
 lit$EAF <- as.numeric(lit$EAF)
 lit$P.value <- as.numeric(lit$P.value)
 
+#What did't get extracted?
+write.table(lit[-which(lit$SNP %in% geno$ID),],'Litterature_SNPs_not_extracted',row.names=F,quote=F)
+
+
 maf <- read.table('geno/maf.frq',h=T,as.is=T)
 maf <- maf[,-c(3:4,6)]
 
@@ -96,7 +100,7 @@ idNames <- idsdf$V1
 
 ids <- which(colnames(t) %in% idNames)
 
-final <- t[,colnames(t) %in% c('ID','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','MAF','CHR','POS','Pos','GRS.type','Trait','Locus','Note','N','P.value',idNames)]
+final <- t[,colnames(t) %in% c('ID','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','MAF','CHROM','POS','Pos','GRS.type','Trait','Locus','Note','N','P.value',idNames)]
 
 #Strand flip function
 strandFlip <- function(x){
@@ -221,6 +225,7 @@ for(snp in which(final$case %in% c(1,3))){
     final[snp,ids] <- -final[snp,ids]+2
     final[snp,'ALT'] <- final[snp,'Effect.Allele']
     final[snp,'REF'] <- final[snp,'Other.Allele']
+    final[snp,'MAF'] <- 1-final[snp,'MAF']
 }
 #Remove those with NA cases
 final <- final[!is.na(final$case),]
@@ -236,11 +241,13 @@ for(snp in which(final$case==4)){
 #Flip according to effect direction
 for(snp in which(final$Effect < 0)){
     final[snp,'Effect'] <- -final[snp,'Effect']
+    final[snp,'MAF'] <- 1-final[snp,'MAF']
     final[snp,'EAF'] <- 1-final[snp,'EAF']
     final[snp,'REF'] <- final[snp,'Effect.Allele']
     final[snp,'ALT'] <- final[snp,'Other.Allele']
     final[snp,ids] <- -final[snp,ids]+2
 }
+colnames(final)[colnames(final)=='MAF'] <- 'EAF.ownData'
 
 #Now the POSITIVE effect allele is always 2 and equal to ALT and the NEGATIVE effect allele is always 0 and equal to REF
 
@@ -320,7 +327,7 @@ ids <- which(colnames(final) %in% idNames)
 #If SNPout is not NA, save the genofile with flipped SNPs as the SNPout name
 if(!is.na(SNPout)){
     print(paste('Saving genotypes for SNPs AFTER flips for other analysis in',SNPout))
-    write.table(final[,colnames(final) %in% c('ID','POS','REF','ALT','Trait',colnames(final)[ids])],SNPout,row.names=F,quote=F)
+    write.table(final[,c(which(colnames(final) %in% c('ID','CHROM','POS','REF','ALT','Trait','EAF.ownData')),ids)],SNPout,row.names=F,quote=F)
 }
 
 
