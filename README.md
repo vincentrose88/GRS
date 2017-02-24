@@ -43,6 +43,8 @@ example.list**
 
   * `./0_setup.sh path-to-impute-folder-with-vcfs`
 
+**NB** I strongly recommend to use my other script: SNPextractor (https://github.com/vincentrose88/SNPextractor) to extract variants with the -g flag for direct usage with GRS**
+
 2. (Optinal) Create the formatted vcf-file for R by (using the names of the SNPs to search through vcfs):
 
   * `./1_create_geno_from_vcf.sh SNPlist.csv`
