@@ -51,7 +51,7 @@ example.list**
 
   * When finished (quits after submitting two scripts to the grid-engine (check with qstat -f)) two files are created in the folder: `genoFile.noHead` and `newHeader` along some gridengine outputs
 
-  * **Alternatively, use the SNPextractor to extract SNPs more effectivly (from positions instead of names) and use the -g flag to get GRS ready output (`genoFile.noHead` and `newHeader`)**
+  * **Alternatively, use the SNPextractor to extract SNPs more effectivly (from positions instead of names) and use the -g flag to get GRS ready output (`genoFile.noHead` and `newHeader`) and use the 1.6_ready_SNPextrator_output.sh script (remember to mv the all.SNPs.vcf into your geno/ folder) to make everything ready for the GRS**
 
 3. Then run the main script with the arguments as follows. If you have created your own geno file, header and/or ld-file, then these can be specified with --geno, --head and --ldfile, repectively.
 
