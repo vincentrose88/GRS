@@ -5,16 +5,17 @@ example.list**
     * Crucial info is: 
     * Effect allele and non-effect allele
     * SNP name (rs-number)
+      * Note that if rs-number is not present in the VCF it will not be extracted. Use SNPextractor, which matches on chr and position, and check names.
     * N in study 
       * crucial when several studies report same SNP or SNPs in high LD
     * P-value 
       * used as N, but also when using a p-value cut-off for what to include in your GRS
     * Chr and position
-      * used to extract genotypes from VCF-file
-      * **NB:** rs names is used to find genotype data, and thus should be checked
+      * used to match SNPs with extractiong from VCF-file when using SNPextractor
+      * **NB:** rs names is used to find genotype data with built-in extraction, and thus should be checked
 
     * Effect (only for a weighted GRS)
-      * measured in standard deviations (SD) from a rank-normalized transformation. **Check your paper**
+      * Should measured in standard deviations (SD) from a rank-normalized transformation. **Check your paper**
     * Effect Allele Frequency (EAF)
 
   * Non-crucial, but nice to have for later comparison:
@@ -51,13 +52,16 @@ example.list**
 
   * When finished (quits after submitting two scripts to the grid-engine (check with qstat -f)) two files are created in the folder: `genoFile.noHead` and `newHeader` along some gridengine outputs
 
-  * **Alternatively, use the SNPextractor to extract SNPs more effectivly (from positions instead of names) and use the -g flag to get GRS ready output (`genoFile.noHead` and `newHeader`) and use the 1.6_ready_SNPextrator_output.sh script (remember to mv the all.SNPs.vcf into your geno/ folder) to make everything ready for the GRS**
+  * **Recommended alternative:** Use the SNPextractor to extract SNPs more effectivly (from positions instead of names) and use the -g flag to get GRS ready output (`genoFile.noHead` and `newHeader`) and use the 1.6_ready_SNPextrator_output.sh script (remember to mv the all.SNPs.vcf into your geno/ folder) to make everything ready for the GRS
+   * SNP-names might be different, as not all SNPs have names in the vcfs, and thus a dummy name (chr:pos) is used insead
 
 3. Then run the main script with the arguments as follows. If you have created your own geno file, header and/or ld-file, then these can be specified with --geno, --head and --ldfile, repectively.
 
   * `./2_create_GRS.R --snp SNPlist.csv --ids IDs.list --spec GRS.spec --out example --pcut 1e-7 --ldcut 0.5 --SNPout SNPs.flipped` 
 
     * Besides the two first arguments (--snp and --ids) everything else is optinal:
+
+      * `--SNPextractor` Flag that tells the GRS to merge on positions when using a SNPextractor output.
     
       * `--spec` Name of file containting specifications for how to combine GRSs. See example `GRS.spec`
 

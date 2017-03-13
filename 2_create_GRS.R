@@ -11,6 +11,7 @@ outputFile <- 'GRS.output'
 pvalCutoff <- 5e-8
 ldCutoff <- 0.8
 SNPout <- NA
+SNPextractor <- FALSE
 
 ##Args with flags
 for(i in 1:length(args)){
@@ -35,6 +36,8 @@ for(i in 1:length(args)){
         ldCutoff <- args[i+1]
     }else if(args[i]=='--SNPout'){
         SNPout <- args[i+1]
+    }else if(args[i]=='--SNPextractor'){
+        SNPextractor <- TRUE
     }else if(grepl('--',args[i])){
         print('flag not recognized or missing. Exiting..')
         q()
@@ -58,6 +61,7 @@ lit$N <- as.numeric(lit$N)
 lit$Effect <- as.numeric(lit$Effect)
 lit$EAF <- as.numeric(lit$EAF)
 lit$P.value <- as.numeric(lit$P.value)
+
 
 #What did't get extracted?
 write.table(lit[-which(lit$SNP %in% geno$ID),],'Litterature_SNPs_not_extracted',row.names=F,quote=F)
@@ -87,10 +91,14 @@ if(length(unique(maf$SNP)) < length(maf$SNP)){
     maf <- maf[-worstMafCand,]
 }
 
-
+if(SNPextractor){ #merging on position when extracting with SNPextractor and keeping the names from SNPextractor (chr:pos dummy names for missing names)
+    tmp <- merge(geno,lit,by.x=c('CHROM','POS'),by.y=c('Chr','Pos'))
+    t <- merge(tmp,maf,by.x=c('CHROM','ID'),by.y=c('CHR','SNP')) #The MAF-file is created from the all.SNPs.vcf, which also have SNPextractor names, and thus this merge should work fine
+}else{
 #Merging with chromosome and rsID (not position, as different build might be an issue)
-tmp <- merge(geno,lit,by.x=c('CHROM','ID'),by.y=c('Chr','SNP'))
-t <- merge(tmp,maf,by.x=c('CHROM','ID'),by.y=c('CHR','SNP'))
+    tmp <- merge(geno,lit,by.x=c('CHROM','ID'),by.y=c('Chr','SNP'))
+    t <- merge(tmp,maf,by.x=c('CHROM','ID'),by.y=c('CHR','SNP'))
+}
 
 #List of particids
 #ids <- read.csv2('../lists/birthdate.csv',as.is=T)
@@ -98,10 +106,13 @@ t <- merge(tmp,maf,by.x=c('CHROM','ID'),by.y=c('CHR','SNP'))
 idsdf <- read.table(idsFile,h=F,as.is=T)
 idNames <- idsdf$V1
 
+#Merging on pos (SNPextractor=TRUE) or name (SNPextractor=FALSE)
 ids <- which(colnames(t) %in% idNames)
-
-final <- t[,colnames(t) %in% c('ID','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','MAF','CHROM','POS','Pos','GRS.type','Trait','Locus','Note','N','P.value',idNames)]
-
+if(SNPextractor){
+    final <- t[,colnames(t) %in% c('ID','SNP','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','MAF','CHROM','POS','GRS.type','Trait','Locus','Note','N','P.value',idNames)]
+}else{
+    final <- t[,colnames(t) %in% c('ID','Effect','EAF','REF','ALT','Effect.Allele','Other.Allele','MAF','CHROM','POS','Pos','GRS.type','Trait','Locus','Note','N','P.value',idNames)]
+}
 #Strand flip function
 strandFlip <- function(x){
     y <- NA
@@ -319,15 +330,14 @@ for(snp in unique(prune$SNP)){
 pruneC <- data.frame(SNP=pruneCSNPs,pruneReason=pruneCReason,stringsAsFactors=F)
 finalWithLDINFO <- merge(final,pruneC,by.x='ID',by.y='SNP',all.x=T)
 
-#Formatting clean up (info (16 columns), then genotypes (17 column to the end) and removing the redundant Pos
+#Formatting clean up (info (16 columns), then genotypes (17 column to the end)
 final <- finalWithLDINFO[,c(which(!colnames(finalWithLDINFO) %in% ids),which(colnames(finalWithLDINFO) %in% ids))]
-final <- final[,-which(colnames(final)=='Pos')]
 ids <- which(colnames(final) %in% idNames)
 
 #If SNPout is not NA, save the genofile with flipped SNPs as the SNPout name
 if(!is.na(SNPout)){
     print(paste('Saving genotypes for SNPs AFTER flips for other analysis in',SNPout))
-    write.table(final[,c(which(colnames(final) %in% c('ID','CHROM','POS','REF','ALT','Trait','EAF.ownData')),ids)],SNPout,row.names=F,quote=F)
+    write.table(final[,c(which(colnames(final) %in% c('ID','SNP','CHROM','POS','REF','ALT','Trait','EAF.ownData')),ids)],SNPout,row.names=F,quote=F)
 }
 
 
