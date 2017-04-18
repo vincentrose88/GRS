@@ -146,7 +146,12 @@ alleleChecker <- function(x,ref='REF',alt='ALT',eff='Effect.Allele',nonEff='Othe
         (x[ref]=='G' & x[alt]=='C') | (x[ref]=='C' & x[alt]=='G')
         )
        ){
-        #print(x[c('ID','POS',ref,alt,eff,nonEff,'MAF','EAF','Effect','N')])
+        if(is.na(x['EAF'])){
+            print(x[c('ID','POS',ref,alt,eff,nonEff,'MAF','EAF','Effect','N')])
+            print('SNP is a tricky SNP, and does not have any EAF info from the .csv file, thus the script does not know how to flip it. Add EAF information, and run again. Skipping for now')
+            case <- NA
+        }else{
+        
         ## Special case - split into EAF above or below 50%
         ### New variable MAF decide if MAF is in the same 'direction' as EAF
         ##4 cases in each catagory (shown for when EAF<50%)
@@ -202,6 +207,7 @@ alleleChecker <- function(x,ref='REF',alt='ALT',eff='Effect.Allele',nonEff='Othe
                 case <- NA
             }
         }
+    }
         #Back to 'normal' SNPs
     }else if(x[ref]==x[eff] & x[alt]==x[nonEff]){
         case <- 1
