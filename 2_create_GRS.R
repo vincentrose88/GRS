@@ -309,9 +309,9 @@ print('ld pruning step...')
 ld <- read.table(ldFile,h=T,as.is=T)
 ld <- ld[ld$R2 > ldCutoff,] #Only look at SNPs with a R2 above 0.8 (default ldCutoff value)
 if(SNPextractor){ #Merging on POS
-    ldSNPsINFO <- final[final$ID %in% c(ld$SNP_A,ld$SNP_B),c('CHR','POS','Trait','P.value')]
-    tmp <- merge(ld,ldSNPsINFO,by.x='BP_A',by.y=c('CHR','POS'),all.x=T)
-    ld <- merge(tmp,ldSNPsINFO,by.x='BP_B',by.y=c('CHR','POS'),all.x=T)
+    ldSNPsINFO <- final[final$POS %in% c(ld$BP_A,ld$BP_B),c('POS','Trait','P.value')]
+    tmp <- merge(ld,ldSNPsINFO,by.x='BP_A',by.y='POS',all.x=T)
+    ld <- merge(tmp,ldSNPsINFO,by.x='BP_B',by.y='POS',all.x=T)
 }else{ #merging on ID
     ldSNPsINFO <- final[final$ID %in% c(ld$SNP_A,ld$SNP_B),c('ID','Trait','P.value')]
     tmp <- merge(ld,ldSNPsINFO,by.x='SNP_A',by.y='ID',all.x=T)
