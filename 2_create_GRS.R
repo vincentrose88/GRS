@@ -62,6 +62,20 @@ lit$Effect <- as.numeric(lit$Effect)
 lit$EAF <- as.numeric(lit$EAF)
 lit$P.value <- as.numeric(lit$P.value)
 
+#Check header is exactly the same as the example-file:
+checkExample <- read.csv('SNPlist.example.csv',as.is=T)
+for(c in 1:ncol(lit)){
+    if(colnames(lit)[c]!=colnames(checkExample)[c]){
+        print('Colums in SNP-list is not *exactly* the same as SNPlist.example.csv, which is required')
+        print('Fix this mismatch, and run again:')
+        print(colnames(lit)[c])
+        print('Should have been')
+        print(colnames(checkExample)[c])
+        q()
+    }
+}
+
+
 
 #What did't get extracted?
 write.table(lit[-which(lit$SNP %in% geno$ID),],'Litterature_SNPs_not_extracted',row.names=F,quote=F)
@@ -139,7 +153,6 @@ alleleChecker <- function(x,ref='REF',alt='ALT',eff='Effect.Allele',nonEff='Othe
     #3: REF==strandFlip(eff) && ALT==strandFlip(nonEff) -> Flip! (allele and strand)
     #4: REF==strandFlip(nonEff) && ALT==strandFlip(eff) -> No allele flip but a strand flip is nice.
     #NA-case: if REF and ALT doesn't match either of the alleles -> (throw error and/or) return NA
-    
     case <- NA
     if(((x[ref]=='A' & x[alt]=='T') | (x[ref]=='T' & x[alt]=='A')
         ) | (
@@ -295,9 +308,15 @@ print('ld pruning step...')
 # LD prune
 ld <- read.table(ldFile,h=T,as.is=T)
 ld <- ld[ld$R2 > ldCutoff,] #Only look at SNPs with a R2 above 0.8 (default ldCutoff value)
-ldSNPsINFO <- final[final$ID %in% c(ld$SNP_A,ld$SNP_B),c('ID','Trait','P.value')]
-tmp <- merge(ld,ldSNPsINFO,by.x='SNP_A',by.y='ID',all.x=T)
-ld <- merge(tmp,ldSNPsINFO,by.x='SNP_B',by.y='ID',all.x=T)
+if(SNPextractor){ #Merging on POS
+    ldSNPsINFO <- final[final$ID %in% c(ld$SNP_A,ld$SNP_B),c('CHR','POS','Trait','P.value')]
+    tmp <- merge(ld,ldSNPsINFO,by.x='BP_A',by.y=c('CHR','POS'),all.x=T)
+    ld <- merge(tmp,ldSNPsINFO,by.x='BP_B',by.y=c('CHR','POS'),all.x=T)
+}else{ #merging on ID
+    ldSNPsINFO <- final[final$ID %in% c(ld$SNP_A,ld$SNP_B),c('ID','Trait','P.value')]
+    tmp <- merge(ld,ldSNPsINFO,by.x='SNP_A',by.y='ID',all.x=T)
+    ld <- merge(tmp,ldSNPsINFO,by.x='SNP_B',by.y='ID',all.x=T)
+}
 #two step prune - within same trait and across traits (for combined GRSs)
 ## Same trait
 SNPLD <- NULL
