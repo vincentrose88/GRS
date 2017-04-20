@@ -283,6 +283,28 @@ colnames(final)[colnames(final)=='MAF'] <- 'EAF.ownData'
 
 print('removing duplicates...')
 # remove duplicated with the same trait association
+
+if(SNPextractor){ #Fixing to find dup via pos, not ID
+worst <- NULL
+for(trait in unique(final$Trait)){
+    traitOnly <- final[final$Trait==trait,]
+    cand <- traitOnly[traitOnly$POS %in% traitOnly[duplicated(traitOnly$POS),'POS'],]
+    if(dim(cand)[1]>1){ #ie, there is duplicated snps for the same trait
+        for(pos in unique(cand$POS)){
+            snpCand <- cand[cand$POS == pos,]
+            if(dim( snpCand[-which(snpCand$N==max(snpCand$N,na.rm=T)),])[1]==0){#if the duplicates are exactly the same, remove the first (by chance)
+                worst <- row.names(snpCand[1,])
+            }else{
+            worst <- c(worst,
+                       row.names(
+                           snpCand[-which(snpCand$N==max(snpCand$N,na.rm=T)),]
+                           )
+                       )
+        }
+        }
+    }
+}
+}else{
 worst <- NULL
 for(trait in unique(final$Trait)){
     traitOnly <- final[final$Trait==trait,]
@@ -290,15 +312,18 @@ for(trait in unique(final$Trait)){
     if(dim(cand)[1]>1){ #ie, there is duplicated snps for the same trait
         for(snp in unique(cand$ID)){
             snpCand <- cand[cand$ID == snp,]
+                        if(dim( snpCand[-which(snpCand$N==max(snpCand$N,na.rm=T)),])[1]==0){#if the duplicates are exactly the same, remove the first (by chance)
+                worst <- row.names(snpCand[1,])
+            }else{
             worst <- c(worst,
                        row.names(
                            snpCand[-which(snpCand$N==max(snpCand$N,na.rm=T)),]
                            )
                        )
-        }
+        }}
     }
 }
-
+}
 if(!is.null(worst)){
     worst <- as.integer(worst)
     final <- final[-worst,]
