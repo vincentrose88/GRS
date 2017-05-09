@@ -76,10 +76,12 @@ for(c in 1:ncol(lit)){
 }
 
 
-
+if(SNPextractor){
+    write.table(lit[-which(lit$Pos %in% geno$POS),],'Litterature_SNPs_not_extracted',row.names=F,quote=F)
+}else{
 #What did't get extracted?
-write.table(lit[-which(lit$SNP %in% geno$ID),],'Litterature_SNPs_not_extracted',row.names=F,quote=F)
-
+    write.table(lit[-which(lit$SNP %in% geno$ID),],'Litterature_SNPs_not_extracted',row.names=F,quote=F)
+}
 
 maf <- read.table('geno/maf.frq',h=T,as.is=T)
 maf <- maf[,-c(3:4,6)]
