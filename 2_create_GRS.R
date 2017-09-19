@@ -47,6 +47,8 @@ for(i in 1:length(args)){
 print('loading in files')
 
 
+exampleSNPlist <- read.csv('SNPlist.example.csv',as.is=T)
+
 #Getting genotypes and adding header myself, as read.table is fuzzy
 #geno <- read.table('all.SNPs.forR.noHeader',h=F,as.is=T)
 #genoHeader <- read.table('newHeader',h=F,as.is=T)
@@ -56,6 +58,16 @@ colnames(geno) <- t(genoHeader)
 #SNP list from literature
 #lit <- read.csv2('../lists/GRS_leadSNPs_full_list.csv',as.is=T)
 lit <- read.csv(snpListFile,as.is=T)
+
+if(!all(colnames(lit) %in% colnames(exampleSNPlist))){
+    print('Your colnames in your SNPlist file is not the same as the example file, which is expected. Fix and run again')
+    print('You have:')
+    print(colnames(lit)[!colnames(lit) %in% colnames(exampleSNPlist)])
+    print('Which should be:')
+    print(colnames(exampleSNPlist)[!colnames(lit) %in% colnames(exampleSNPlist)])
+    q()
+}
+
 #Justin Case code
 lit$N <- as.numeric(lit$N)
 lit$Effect <- as.numeric(lit$Effect)
