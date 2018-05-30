@@ -104,7 +104,14 @@ if(length(unique(maf$SNP)) < length(maf$SNP)){
     for(triSNP in maf$SNP[duplicated(maf$SNP)]){
 
         mafCand <-  maf[maf$SNP == triSNP,]
-        litEAF  <- lit[lit$SNP ==triSNP,'EAF']
+        if(SNPextractor){
+            print('A tri-allelic site have been found (see below) which can be sorted out by name-matching.')
+            print('but you are using SNPextractor which matches on positions, and so far I have not found a work-around, so go into your SNPlist and ensure that below SNP has the same name as in your genoFile.noHead, often a generic name as: 1:1234')
+            print(mafCand)
+            q()
+        }else{
+            litEAF  <- lit[lit$SNP ==triSNP,'EAF']
+        }
         worstMafCand <- c(worstMafCand,
                           as.integer(
                               row.names(
