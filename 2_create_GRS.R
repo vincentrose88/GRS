@@ -380,6 +380,7 @@ if(sum(ld$Trait.x==ld$Trait.y)>0){
 }
 if(!is.null(SNPLD)){
     outLD <- data.frame(SNP=SNPLD,trait=traitLD,stringsAsFactors=F)
+    outLD <- unique(outLD)
     for(out in 1:nrow(outLD)){
         final <- final[-which(final$Trait==outLD[out,'trait'] & final$ID==outLD[out,'SNP']),]
     }
